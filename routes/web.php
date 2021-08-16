@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/ajax/get-description/{id}', [PCFListController::class, 'getDescription'])->name('.get_description'); 
             Route::get('/ajax/get-descriptions/{item_code}', [PCFListController::class, 'getDescriptions'])->name('.get_descriptions'); 
             Route::get('/ajax/remove-added-item/{id}', [PCFListController::class, 'removeAddedItem'])->name('.remove_added_item');
+            Route::get('/ajax/get-grand-totals/{pcf_no}', [PCFListController::class, 'getGrandTotals'])->name('.get_grand_totals');
         });
     });
 

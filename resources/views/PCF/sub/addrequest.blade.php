@@ -43,7 +43,7 @@
                                         <div class="form-group">
                                             <label for="test_name_id">Test Code</label>
                                             <input type="hidden" class="form-control" name="pcf_no_add_items" id="pcf_no_add_item"> <!-- pcf no --> 
-                                            <input type="hidden" class="form-control" name="hidden_item_code" id="hidden_item_code"> <!-- pcf no --> 
+                                            <input type="hidden" class="form-control" name="hidden_item_code" id="hidden_item_code"> <!-- item code --> 
                                             <select class="form-control" name="item_code_add_item" id="item_code_add_item">
                                                 <option value="" selected>Please select Item Code</option>
                                                 @foreach ($sources as $source)
@@ -58,15 +58,15 @@
                                             <input type="text" class="form-control" name="description" id="description_add_item"
                                                 value="{{ old('description') }}" placeholder="source description" required>
                                             <input type="text" class="form-control" name="rate_foc" id="rate_add_item"
-                                                value="{{ old('rate_foc') }}" placeholder="rate" required>
+                                                value="{{ old('rate_foc') }}" placeholder="currency rate" required>
                                             <input type="text" class="form-control" name="tp_php_foc" id="tp_php_add_item"
-                                                value="{{ old('tp_php_foc') }}" placeholder="tp php" required>    
+                                                value="{{ old('tp_php_foc') }}" placeholder="trasfer price" required>    
                                             <input type="text" class="form-control" name="cost_periph_foc" id="cost_periph_add_item"
                                                 value="{{ old('cost_periph_foc') }}" placeholder="cost peripherals" required>
-                                            <input type="text" class="form-control" name="transfer_price_foc" id="transfer_price_add_item"
+                                            {{-- <input type="text" class="form-control" name="transfer_price_foc" id="transfer_price_add_item"
                                                 value="{{ old('transfer_price_foc') }}" placeholder="transfer price" required>
                                             <input type="text" class="form-control" name="mandatory_peripherals_foc" id="mandatory_peripherals_add_item"
-                                                value="{{ old('mandatory_peripherals_foc') }}" placeholder="mandatory peripherals" required>
+                                                value="{{ old('mandatory_peripherals_foc') }}" placeholder="mandatory peripherals" required> --}}
                                             <input type="text" class="form-control" name="opex_foc" id="opex_add_item"
                                                 value="{{ old('opex_foc') }}" placeholder="opex" required>
                                             <input type="text" class="form-control" name="net_sales_foc" id="net_sales_add_item"
@@ -154,7 +154,7 @@
                                             <select class="form-control" name="item_code_foc" id="item_code_foc">
                                                 <option value="" selected>Please select Item Code</option>
                                                 @foreach ($sources as $source)
-                                                    <option value="{{ $source->item_code }}">{{ $source->item_code }}</option>
+                                                    <option value="{{ $source->id }}">{{ $source->item_code }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -310,14 +310,14 @@
                                         <div class="form-group">
                                             <label for="annual_profit">Annual Profit</label>
                                             <input type="text" class="form-control" name="annual_profit" id="annual_profit"
-                                                value="{{ old('annual_profit') }}" required>
+                                                value="{{ old('annual_profit','0') }}" required> 
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="annual_profit_rate">Annual Profit Rate</label>
                                             <input type="text" class="form-control" name="annual_profit_rate" id="annual_profit_rate"
-                                                value="{{ old('annual_profit_rate') }}" required>
+                                                value="{{ old('annual_profit_rate', '0') }}" required>
                                         </div>
                                     </div>
                                 </div>
@@ -405,6 +405,52 @@
             var sales = $("#sales_add_item").val();
             var  total_sales = sales * quantity;
             $("#total_sales_add_item").val(total_sales.toFixed(2));
+
+            //get opex value
+            getOpexValue();
+
+            //get net sales
+            getNetSales();
+
+            //get gross profit
+            getGrossProfit();
+
+            //get total gross profit
+            getTotalGrossProfit();
+
+            //get total net sales
+            getTotalNetSales();
+
+            //get profit rate
+            getProfitRate();
+        }
+
+        function getGrandTotals(pcf_no){
+            if (pcf_no){
+                $.ajax({
+                    type: 'GET',
+                    dataType: 'json',
+                    url: '/PCF.sub/ajax/get-grand-totals/' + pcf_no,
+                    headers: {
+                        'X-CSRF-Token': '{{ csrf_token() }}',
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        $("#annual_profit").val(response.annual_profit);
+                        $("#annual_profit_rate").val(response.annual_profit_rate);
+                    },
+                    error: function(response) {
+                        Swal.fire(
+                            'Something went wrong!',
+                            'Please contact your system administrator!',
+                            'error'
+                        )
+                    }
+                });
+            } else {
+                $("#annual_profit").val("0");
+                $("#annual_profit_rate").val("0");
+            }
         }
 
         $("#submit_item").click(function(e){
@@ -417,8 +463,8 @@
                 var quantity = $("#quantity_add_item").val();
                 var sales = $("#sales_add_item").val();
                 var total_sales = $("#total_sales_add_item").val();
-                var transfer_price = $("#transfer_price_add_item").val();
-                var mandatory_peripherals = $("#mandatory_peripherals_add_item").val();
+                var transfer_price = $("#tp_php_add_item").val();
+                var mandatory_peripherals = $("#cost_periph_add_item").val();
                 var opex = $("#opex_add_item").val();
                 var net_sales = $("#net_sales_add_item").val();
                 var gross_profit = $("#gross_profit_add_item").val();
@@ -454,7 +500,10 @@
                             'success'
                         );
                         
+                        //refresh added items table
                         refreshAddedItemsTable(); 
+                        //get grand totals
+                        getGrandTotals(pcf_no);
 
                     },
                     error: function (data) {
@@ -517,8 +566,10 @@
                             'Item added successfully!',
                             'success'
                         );
-                        
+                        //referesh FOC data table
                         refreshAddedFOCTable(); 
+                        //get grand totals 
+                        getGrandTotals(pcf_foc);
 
                     },
                     error: function (data) {
@@ -542,8 +593,8 @@
             $("#quantity_add_item").val("");
             $("#sales_add_item").val("");
             $("#total_sales_add_item").val("");
-            $("#transfer_price_add_item").val("");
-            $("#mandatory_peripherals_add_item").val("");
+            // $("#transfer_price_add_item").val("");
+            // $("#mandatory_peripherals_add_item").val("");
             $("#opex_add_item").val("");
             $("#net_sales_add_item").val("");
             $("#gross_profit_add_item").val("");
@@ -611,9 +662,9 @@
         }
 
         //Format no
-        function formatNumber (num) {
-            return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
-        }
+        // function formatNumber (num) {
+        //     return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+        // }
        
        //Get PCF_No for reference
         $('#pcf_no').keyup(function() {
@@ -711,9 +762,67 @@
             $("#opx_foc").val(opx.toFixed(2));
             $("#total_cost_foc").val(total_cost.toFixed(2));
             $("#cost_year_foc").val(cost_year.toFixed(2));
+
+        }
+        
+        function getOpexValue() {
+            var currency_rate = $("#rate_add_item").val();
+            var transfer_price = $("#tp_php_add_item").val();
+            var cost_periph = $("#cost_periph_add_item").val();
+            
+            if (parseInt(currency_rate) == 1) {
+                var opex = transfer_price * 1.15 + parseInt(cost_periph);
+            } else {
+                var opex = transfer_price * 1.3 + parseInt(cost_periph);
+            }
+
+            $("#opex_add_item").val(opex.toFixed(2));
+        }
+
+        function getNetSales() {
+            var sales = $("#sales_add_item").val();
+            var net_sales = sales/1.12;
+
+            $("#net_sales_add_item").val(net_sales.toFixed(2));
+        }
+
+        function getGrossProfit() {
+            var net_sales = $("#net_sales_add_item").val();
+            var opex = $("#opex_add_item").val();
+            var cost_periph = $("#cost_periph_add_item").val();
+
+            var gross_profit = net_sales - opex;
+            $("#gross_profit_add_item").val(gross_profit.toFixed(2));
+        }
+
+        function getTotalGrossProfit() {
+            var gross_profit = $("#gross_profit_add_item").val();
+            var quantity = $("#quantity_add_item").val();
+            
+            var total_gross_profit = gross_profit * quantity;
+
+            $("#total_gross_profit_add_item").val(total_gross_profit.toFixed(2));
+        }
+
+        function getTotalNetSales() {
+            var total_sales = $("#total_sales_add_item").val();
+
+            var total_net_sales = total_sales / 1.12;
+
+            $("#total_net_sales_add_item").val(total_net_sales.toFixed(2));
+        }
+
+        function getProfitRate() {
+            var gross_profit = $("#gross_profit_add_item").val();
+            var sales = $("#sales_add_item").val();
+
+            var profit_rate = (gross_profit / sales) * 100;
+
+            $("#profit_rate_add_item").val(profit_rate.toFixed(0));
         }
 
         function removeAddedItem(data) {
+            var pcf_no = $("#pcf_no_add_item").val();
             Swal.fire({
                 title: 'Remove Added Item',
                 text: "Are you sure?",
@@ -737,6 +846,7 @@
                         success: function(response) {
                             //reload table 
                             refreshAddedItemsTable(); 
+                            getGrandTotals(pcf_no);
                             //fire the alert message
                             Swal.fire(
                                 'Success!',

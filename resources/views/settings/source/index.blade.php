@@ -148,7 +148,7 @@
             var currency_rate = $("#currency_rate").val();
             // var total_price = $("#tp_php").val();
            var  total_price = unit_price * currency_rate;
-           $("#tp_php").val(formatNumber(total_price.toFixed(2)));
+           $("#tp_php").val(total_price);
         }
 
         function getTotalPriceEdit() {
@@ -156,7 +156,7 @@
             var currency_rate = $("#edit_currency_rate").val();
             // var total_price = $("#tp_php").val();
            var  total_price = unit_price * currency_rate;
-           $("#edit_tp_php").val(formatNumber(total_price.toFixed(2)));
+           $("#edit_tp_php").val(total_price);
         }
 
         function formatNumber (num) {
