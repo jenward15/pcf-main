@@ -46,54 +46,64 @@ class PCFRequestController extends Controller
 
                     if ($data->status == 0) {
 
-                    return
+                        return
                         ' 
-                    <td style="text-align: center; vertical-align: middle">
-                        <a href="#" class="badge badge-info" data-toggle="modal"
-                            data-id="'.$data->id .'"
-                            data-name="'.$data->name .'"
-                            data-description="'.$data->description .'"
-                            data-target="#editSpecimenTypesModal"
-                            onclick="editSpecimenTypes($(this))"><i
-                                class="far fa-eye"></i> 
-                            View List</a>
-                            <a href="#" class="badge badge-success"
-                            data-id="' . $data->id . '"
-                            onclick="enableSpecimen($(this))"><i
-                                class="fas fa-plus"></i> 
-                            Add Item</a>
+                        <td style="text-align: center; vertical-align: middle">
+                            <a href="#" class="badge badge-info" data-toggle="modal"
+                                data-id="'.$data->id .'"
+                                data-pcf_no="'.$data->pcf_no .'"
+                                data-date="'.$data->date .'"
+                                data-institution="'.$data->institution .'"
+                                data-duration="'.$data->duration .'"
+                                data-date_biding="'.$data->date_biding .'"
+                                data-bid_docs_price="'.$data->bid_docs_price .'"
+                                data-psr="'.$data->psr .'"
+                                data-manager="'.$data->manager .'"
+                                data-annual_profit="'.$data->profit .'"
+                                data-annual_profit_rate="'.$data->profit_rate .'"
+                                data-target="#editPCFRequestModal"
+                                onclick="editPCFRequest($(this))">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </a>
                             <a href="#" class="badge badge-success"
                                 data-id="' . $data->id . '"
-                                onclick="ApproveRequest($(this))"><i
-                                    class="fas fa-check"></i> 
-                            Approve</a>
-                    </td>
-                    ';
+                                onclick="ApproveRequest($(this))">
+                                <i class="fas fa-check"></i> 
+                                Approve
+                            </a>
+                        </td>
+                        ';
                     }
 
-                    return
-                        ' 
-                    <td style="text-align: center; vertical-align: middle">
-                        <a href="#" class="badge badge-info" data-toggle="modal"
-                            data-id="'.$data->id .'"
-                            data-name="'.$data->name .'"
-                            data-description="'.$data->description .'"
-                            data-target="#editSpecimenTypesModal"
-                            onclick="editSpecimenTypes($(this))"><i
-                                class="far fa-eye"></i> 
-                            View List</a>
-                            <a href="#" class="badge badge-success"
-                            data-id="' . $data->id . '"
-                            onclick="enableSpecimen($(this))"><i
-                                class="fas fa-plus"></i> 
-                            Add Item</a>
+                        return
+                            ' 
+                        <td style="text-align: center; vertical-align: middle">
+                            <a href="#" class="badge badge-info" data-toggle="modal"
+                                data-id="'.$data->id .'"
+                                data-pcf_no="'.$data->pcf_no .'"
+                                data-date="'.$data->date .'"
+                                data-institution="'.$data->institution .'"
+                                data-duration="'.$data->duration .'"
+                                data-date_biding="'.$data->date_biding .'"
+                                data-bid_docs_price="'.$data->bid_docs_price .'"
+                                data-psr="'.$data->psr .'"
+                                data-manager="'.$data->manager .'"
+                                data-annual_profit="'.$data->profit .'"
+                                data-annual_profit_rate="'.$data->profit_rate .'"
+                                data-target="#editPCFRequestModal"
+                                onclick="editPCFRequest($(this))">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </a>
                             <a href="#" class="badge badge-danger"
                                 data-id="' . $data->id . '"
-                                onclick="DisApproveRequest($(this))"><i
-                                    class="fas fa-times"></i> 
-                            Dis-Approve</a>
-                    </td>
-                    ';
+                                onclick="DisApproveRequest($(this))">
+                                <i class="fas fa-times"></i> 
+                                Dis-Approve
+                            </a>
+                        </td>
+                        ';
                 })
                 ->escapeColumns([])
                 ->make(true);
@@ -188,23 +198,38 @@ class PCFRequestController extends Controller
      */
     public function update(Request $request, PCFRequest $PCFRequest)
     {
-        $validator = Validator::make($request->all(), [ //ignore this line error it still works
-            'specimen_type_id' => 'required|numeric',
-            'specimen_type' => 'required|string|unique:p_c_f_s,name,' . $request->specimen_type_id,
-            'description'   => 'nullable|string'
+        $validator = Validator::make($request->all(), [ 
+            'pcf_request_id' => 'required|numeric',
+            'pcf_no'   => 'required|string',
+            'date'   => 'required|string',
+            'institution'   => 'nullable|string',
+            'duration'  => 'required|string',
+            'date_biding'   => 'required|string',
+            'bid_docs_price'   => 'required|string',
+            'psr'   => 'required|string',
+            'manager'   => 'required|string',
+            'profit'   => 'required|string',
+            'profit_rate'   => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
-            Alert::error('Invalid Data', $validator->errors()->first()); //ignore the error it still works
+            Alert::error('Invalid Data', $validator->errors()->first()); 
             return redirect()->route('PCF');
         }
 
-        $updateSpecimenTypes = PCFRequest::findOrFail($request->specimen_type_id);
-        $updateSpecimenTypes->name = $request->specimen_type;
-        $updateSpecimenTypes->description = $request->description;
-        $updateSpecimenTypes->save();
+        $savePcfRequest = PCFRequest::findOrFail($request->pcf_request_id);
+        $savePcfRequest->date = $request->date;
+        $savePcfRequest->institution = $request->institution;
+        $savePcfRequest->duration = $request->duration;
+        $savePcfRequest->date_biding = $request->date_biding;
+        $savePcfRequest->bid_docs_price = $request->bid_docs_price;
+        $savePcfRequest->psr = $request->psr;
+        $savePcfRequest->manager = $request->manager;
+        $savePcfRequest->profit = $request->profit;
+        $savePcfRequest->profit_rate = $request->profit_rate;
+        $savePcfRequest->save();
 
-        Alert::success('Specimen Types', 'Updated successfully'); //ignore the error it still works
+        Alert::success('PCF Request Details', 'Added successfully'); 
 
         return redirect()->route('PCF');
     }

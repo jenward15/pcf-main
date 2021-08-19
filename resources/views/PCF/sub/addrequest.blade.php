@@ -209,7 +209,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
                             </form>
                         </div>
                     </div>
@@ -369,7 +368,7 @@
                     { data: 'quantity' },
                     { data: 'sales' },
                     { data: 'total_sales' },
-                    { data: 'Action' },
+                    { data: 'action' },
                 ],
             });
         });
